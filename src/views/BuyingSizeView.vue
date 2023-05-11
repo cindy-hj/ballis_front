@@ -30,18 +30,42 @@
 
                 <div class="shipping_method" v-show="state.showMethod">
                     <hr />
+
                     <div class="shipping_method_body" v-show="state.methodSelect === 1">
-                        <button @click="handleFast(state.size)">빠른배송</button> 
-                        <button @click="handleType(state.size, 'normal')">일반배송</button>
+                        <div v-for="(tmp, i) in state.rowFast" :key="i">
+                            <button v-if="tmp.sellProductSize === state.size" @click="handleFast(state.size, tmp)">
+                                <p>{{ tmp.sellWishPrice }}</p>
+                                <p>빠른배송</p>
+                            </button>
+                        </div>  
+                        <div v-for="(tmp, i) in state.rowNormal" :key="i">
+                            <button v-if="tmp.sellProductSize === state.size" @click="handleType(state.size, 'normal', tmp)">
+                                <p>{{ tmp.sellWishPrice }}</p>
+                                <p>일반배송</p>
+                            </button>
+                        </div>
                     </div>
+
                     <div class="shipping_method_body" v-show="state.methodSelect === 2">
-                        <button @click="handleFast(state.size)">빠른배송</button> 
+                        <div v-for="(tmp, i) in state.rowFast" :key="i">
+                            <button v-if="tmp.sellProductSize === state.size" @click="handleFast(state.size, tmp)">
+                                <p>{{ tmp.sellWishPrice }}</p>
+                                <p>빠른배송</p>
+                            </button>
+                        </div>
                     </div>
                     <div class="shipping_method_body" v-show="state.methodSelect === 3">
-                        <button @click="handleType(state.size, 'normal')">일반배송</button>
+                        <div v-for="(tmp, i) in state.rowNormal" :key="i">
+                            <button v-if="tmp.sellProductSize === state.size" @click="handleType(state.size, 'normal', tmp)">
+                                <p>{{ tmp.sellWishPrice }}</p>
+                                <p>일반배송</p>
+                            </button>
+                        </div>
                     </div>
                     <div class="shipping_method_body" v-show="state.methodSelect === 4">
-                        <button @click="handleType(state.size, 'bid')">구매입찰</button>
+                        <button @click="handleType(state.size, 'bid')">
+                            <p>구매입찰</p>
+                        </button>                        
                     </div>
                 </div>
             </div>
@@ -55,7 +79,6 @@ import axios from 'axios';
 import { onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-
 export default {
     setup () {
         const route = useRoute();
@@ -69,7 +92,6 @@ export default {
             rowBoth : [],
             rowCheaper : [],
             forInfo : '',
-            target : '',
 
             sizes : [],
             showMethod : false,
@@ -78,8 +100,8 @@ export default {
         })
 
 
-        const handleFast = (size) => {
-            store.commit('setsellerNumber', state.rowFast)
+        const handleFast = (size, tmp) => {
+            store.commit('setSelectedItem', tmp)
             router.push({
                 path : '/buying/payment',
                 query : {
@@ -90,7 +112,8 @@ export default {
             })
         }
 
-        const handleType = (size, type) => {
+        const handleType = (size, type, tmp) => {
+            store.commit('setSelectedItem', tmp)
             router.push({
                 path : '/buying/method',
                 query : {
@@ -110,10 +133,10 @@ export default {
                 state.rowNormal = res.data.normal; // 일반배송
                 state.rowBoth = res.data.both; // 둘 중 더 저렴한 데이터
                 state.rowCheaper = res.data.cheaper; // 둘 중 더 저렴한 데이터, 둘 중 하나만 존재시 그 데이터
-                // console.log("빠른배송", state.rowFast)
-                // console.log("일반배송", state.rowNormal)
-                // console.log("둘중 저렴", state.rowBoth)
-                // console.log("사이즈별 가장 저렴", state.rowCheaper)
+                console.log("빠른배송", state.rowFast)
+                console.log("일반배송", state.rowNormal)
+                console.log("둘중 저렴", state.rowBoth)
+                console.log("사이즈별 가장 저렴", state.rowCheaper)
 
                 state.forInfo = state.rowCheaper[0] // 항상 존재 -> 대표 정보 출력
                 // console.log("인포용",state.forInfo);

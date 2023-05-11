@@ -89,8 +89,14 @@ export default {
             days : 30,
             date : null,
             formattedDate : null,
+
+            // item : ''
         })
 
+        // watchEffect(() => {
+        //     state.item = store.getters.getSelectedItem;
+        // })
+        
         const handleDate = (days) => {
             state.days = days;
             const now = new Date();

@@ -6,8 +6,7 @@ export default createStore({
     selectedDate : '',
     selectedFormattedDate : '',
     selectedDays : 0,
-    sellerNumber : 0,
-    buyerNumber : 0
+    selectedItem : ''
   },
 
   getters: {
@@ -23,11 +22,8 @@ export default createStore({
     getSelectedDays (state) {
       return state.selectedDays
     },
-    getSellerNumber (state) {
-      return state.sellerNumber
-    },
-    getBuyerNumber (state) {
-      return state.buyerNumber
+    getSelectedItem (state) {
+      return state.selectedItem
     }
   },
 
@@ -44,11 +40,8 @@ export default createStore({
     setSelectedDays (state, payload) {
       state.selectedDays = payload
     },
-    setSellerNumber (state, payload) {
-      state.sellerNumber = payload
-    },
-    setBuyerNumber (state, payload) {
-      state.buyerNumber = payload
+    setSelectedItem (state, payload) {
+      state.selectedItem = payload
     }
   },
 
