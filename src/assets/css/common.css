@@ -1,0 +1,52 @@
+/* 공통 margin-top => 헤더와 겹치기 때문에 설정
+*/
+.common_mt160 {
+    margin-top: 160px;
+}
+
+/* 관리자 페이지 전체 영역 설정 */
+.admin_wrap {
+    width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    /* padding: 0px 20px; */
+    overflow: hidden;
+}
+
+/* 관리자 페이지 컨텐츠 영역 설정 */
+.admin_content {
+    width: 1080px;
+    float: left;
+}
+
+.admin_input_wrap {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* 리뷰 모달 */
+.review_blackBg {
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* r g b apacity*/ 
+    position: fixed;
+    padding: 20px;
+    top:0;
+    left: 0;
+    z-index: 9999999; /* header보다 높아야 해서 높은 값 지정*/
+}
+
+.review_whiteBg {
+    width: 800px;
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+ 
