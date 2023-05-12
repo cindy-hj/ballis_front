@@ -29,7 +29,7 @@
                                 <p style="font-size: 15px;">즉시 구매가</p>
                             </span>
                         </button>
-                        <button class="btn btn-secondary btn-lg" type="button" id="wish_price_button">
+                        <button class="btn btn-secondary btn-lg" type="button" id="wish_price_button" @click="handleSelling(state.productid)">
                             <span>판매</span>
                             <span v-if="tmp.buyWishPrice">
                                 {{ tmp.buyWishPrice }}원
@@ -141,6 +141,10 @@ export default {
             router.push({path:"/buying/size", query:{productid:id}})
         }
 
+        const handleSelling = (id) => {
+            router.push({path:"/selling/size", query:{productid:id}})
+        }
+
         
         const handleDataReview = () => {
             const url = `/api/get/review/all`;
@@ -172,7 +176,8 @@ export default {
 
         return {
             state,
-            handleBuying
+            handleBuying,
+            handleSelling
         }
     }
 }

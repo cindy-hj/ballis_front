@@ -127,7 +127,7 @@ export default {
 
         const handleData = async() => {
             try {
-                const res = await axios.get(`/api/get/product/buy/all?productid=${state.productid}`);
+                const res = await axios.get(`/api/get/product/buy?productid=${state.productid}`);
                 console.log('상품한개', res.data);
                 state.rowFast = res.data.fast; // 빠른배송
                 state.rowNormal = res.data.normal; // 일반배송

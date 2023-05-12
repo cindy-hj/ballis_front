@@ -2,68 +2,52 @@
     <!-- 모달영역 -->
     <delivery-modal v-if="showModal" @close="showModal = false"/>
     <div class="common_mt160">
-        <!-- 빠른배송, 즉시구매 -->
-        <div class="container" id="wrap" v-if="state.type === 'fast' || state.type === 'normal'">
+        <!-- 즉시판매 -->
+        <div class="container" id="wrap" v-if="state.type === 'normal'">
             <div class="head d-flex align-items-center">
                 <img :src="state.item.imagePath" class="head_img">
                 <div class="d-flex flex-column ml-3">
                     <p style="font-weight: bold;">{{ state.item.modelNumber }}</p>
                     <p>{{ state.item.productEngName }}</p>
                     <p style="color: #aeaeae;">{{ state.item.productKorName }}</p>
-                    <p>{{ state.item.sellProductSize }}</p>
-                    <p v-if="state.item.inventoryDiv === 1"><button class="fast_small">빠른배송</button></p>    
+                    <p>{{ state.size }}</p>  
                 </div>
             </div>
-
-            <h4>배송 주소</h4>
+            <h4>판매 정산 계좌</h4>
+            <p><button @click="showModal = true">계좌 추가</button></p>
+            <hr />
+            <h4>반송 주소</h4>
             <p><button @click="showModal = true">주소 추가</button></p>
             <hr />
-
-            <h4>배송 방법</h4>
-            <div v-if="state.type === 'fast'">
-                <p>빠른배송</p>
-            </div>
-            <div v-else>
-                <p>일반배송</p>
+            <h4>발송 방법</h4>
+            <div>
+                <p>택배발송 선불</p>
             </div>
             <hr />
-            
             <h4>최종 주문 정보</h4>
-            <h5>총 결제 금액</h5>
-            <div v-if="state.type === 'fast'">
-                <h5>{{ state.item.sellWishPrice + state.item.sellWishPrice*0.015 + 5000 }}원</h5>
+            <h5>총 정산 금액</h5>
+            <div>
+                <h5>{{ Math.floor(Number(state.item.buyWishPrice) - Number(state.item.buyWishPrice*0.02)) }}원</h5>
                 <hr />
-                <p>구매가</p>
-                <p>{{ state.item.sellWishPrice }}</p>
+                <p>즉시 판매가</p>
+                <p>{{ Number(state.item.buyWishPrice) }}원</p>
                 <p>검수비</p>
                 <p>무료</p>
                 <p>수수료</p>
-                <p>{{ state.item.sellWishPrice*0.015 }}</p>
+                <p>{{ -Math.floor(Number(state.item.buyWishPrice*0.02)) }}원</p>
                 <p>배송비</p>
-                <p>5,000원</p>
-            </div>
-            <div v-if="state.type === 'normal'">
-                <h5>{{ state.item.sellWishPrice + state.item.sellWishPrice*0.015 + 3000 }}원</h5>
-                <hr />
-                <p>즉시 구매가</p>
-                <p>{{ state.item.sellWishPrice }}</p>
-                <p>검수비</p>
-                <p>무료</p>
-                <p>수수료</p>
-                <p>{{ state.item.sellWishPrice*0.015 }}</p>
-                <p>배송비</p>
-                <p>3,000원</p>
+                <p>선불, 판매자 부담</p>
             </div>
             <hr />
-
             <h4>결제 방법</h4>
             <hr />
-            
-            <h4>구매 조건 확인</h4>
-            <button @click="handleBuy">결제하기</button>
+            <h4>현금영수증 정보?</h4>
+            <hr />
+            <h4>판매 조건 확인</h4>
+            <button @click="handleSellNow">즉시 판매하기</button>
         </div>
 
-        <!-- 구매입찰 -->
+        <!-- 판매입찰, 보관판매 -->
         <div class="container" id="wrap" v-if="state.row[0]">
             <div class="head d-flex align-items-center">
                 <img :src="state.row[0].imagePath" class="head_img">
@@ -72,50 +56,96 @@
                     <p>{{ state.row[0].productEngName }}</p>
                     <p style="color: #aeaeae;">{{ state.row[0].productKorName }}</p>
                     <p>{{ state.size }}</p>
-                    <p v-if="state.row[0].inventoryDiv === 1"><button class="fast_small">빠른배송</button></p>
                 </div>
             </div>
-
-            <h4>배송 주소</h4>
-            <p><button @click="showModal = true">주소 추가</button></p>
-            <hr />
-
-            <h4>배송 방법</h4>
-            <div>
-                <p>일반배송</p>
+            <div v-if="state.type === 'bid'">
+                <h4>판매 정산 계좌</h4>
+                <p><button @click="showModal = true">계좌 추가</button></p>
+                <hr />
+                <h4>반송 주소</h4>
+                <p><button @click="showModal = true">주소 추가</button></p>
+                <hr />
+                <h4>발송 방법</h4>
+                <div>
+                    <p>택배발송 선불</p>
+                </div>
+                <hr />
+                <h4>최종 주문 정보</h4>
+                <h5>총 정산 금액</h5>
+                <div>
+                    <h5>{{ Math.floor(state.bidPrice - state.bidPrice*0.02) }}원</h5>
+                    <hr />
+                    <p>판매 희망가</p>
+                    <p>{{ state.bidPrice }}</p>
+                    <p>검수비</p>
+                    <p>무료</p>
+                    <p>수수료</p>
+                    <p>{{ -Math.floor(state.bidPrice*0.02) }}원인데 최대 30만원이로구만...</p>
+                    <p>배송비</p>
+                    <p>선불, 판매자 부담</p>
+                    <hr />
+                    <p>입찰 마감 기한</p>
+                    <p>{{ state.bidDays }}일 - {{ state.bidFormattedDate }} 까지</p>
+                </div>
+                <hr />
+                <h4>결제 방법</h4>
+                <hr />
+                <h4>현금영수증 정보?</h4>
+                <hr />
+                <h4>판매 조건 확인</h4>
+                <button @click="handleSellLater">판매 입찰하기</button>
             </div>
-            <hr />
-            
-            <h4>최종 주문 정보</h4>
-            <h5>총 결제 금액</h5>
-            <div>
-                <h5 >{{ state.bidPrice + state.bidPrice*0.03 + 3000 }}원</h5>
+            <div v-if="state.type ==='keep'">
+                <h4>판매 정산 계좌</h4>
+                <p><button @click="showModal = true">계좌 추가</button></p>
                 <hr />
-                <p>구매 희망가</p>
-                <p>{{ state.bidPrice }}</p>
-                <p>검수비</p>
-                <p>무료</p>
-                <p>수수료</p>
-                <p>{{ state.bidPrice*0.03 }}</p>
-                <p>배송비</p>
-                <p>3,000원</p>
+                <h4>반송/회수 주소</h4>
+                <p><button @click="showModal = true">주소 추가</button></p>
                 <hr />
-                <p>입찰 마감 기한</p>
-                <p>{{ state.bidDays }}일 - {{ state.bidFormattedDate }} 까지</p>
-            </div> 
-            <hr />
-
-            <h4>결제 방법</h4>
-            <hr />
-            
-            <h4>구매 조건 확인</h4>
-            <button @click="handleBid">구매 입찰하기</button>
+                <h4>발송 방법</h4>
+                <div>
+                    <p>택배발송 선불</p>
+                </div>
+                <hr />
+                <h4>페널티 기준 금액</h4>
+                <div>
+                    <p>신청 직전월의 평균 거래가</p>
+                </div>
+                <hr />
+                
+                <h4>최종 신청 정보</h4>
+                <h5>총 정산 금액</h5>
+                <div>
+                    <h5>{{ Math.floor(state.bidPrice - state.bidPrice*0.02) }}원</h5>
+                    <hr />
+                    <p>판매 희망가</p>
+                    <p>{{ state.bidPrice }}</p>
+                    <p>검수비</p>
+                    <p>무료</p>
+                    <p>수수료</p>
+                    <p>{{ -Math.floor(state.bidPrice*0.02) }}원인데 최대 30만원이로구만...</p>
+                    <p>배송비</p>
+                    <p>선불, 판매자 부담</p>
+                    <hr />
+                </div>
+                <h5>총 결제 금액</h5>
+                <div>
+                    <h5 >3000원</h5>
+                    <hr />
+                    <p>창고 이용료</p>
+                    <p>3000원</p>
+                    <p>30일마다 월 3000원/건 자동 결제</p>
+                    <p>보관 기한</p>
+                    <p>{{ state.bidDays }}일 - {{ state.bidFormattedDate }} 까지</p>
+                </div> 
+                <hr />
+                <h4>결제 방법</h4>
+                <hr />
+                <h4>보관판매 조건 확인</h4>
+                <button @click="handleSellLater">결제하기</button>
+            </div>
         </div>
-
     </div>
-    
-    
-
 </template>
 
 <script>
@@ -162,32 +192,31 @@ export default {
             state.bidDays = store.getters.getSelectedDays;
         });
 
-        // 결제
-        const handleBuy = async() => {
+        // 즉시판매 - 결제테이블
+        const handleSellNow = async() => {
             // 유효성 검사 통과 > 구매 조건 확인 all check
             // if(state.errorMessage.length === 0) { 
                 try {
-                    const url = `/api/post/contract/sell?type=${state.type}`;
+                    const url = `/api/post/contract/buy?type=${state.type}`;
                     const headers = {"Content-Type":"application/json"};
                     const body = {
                         productId : state.productid,
-                        buyingId : null,
-                        sellingId : state.item.sellingId,
-                        buyerNumber : 1, // 로그인 구현 후 수정
-                        sellerNumber : state.item.sellerNumber,
-                        price : state.item.sellWishPrice,
+                        buyingId : state.item.buyingId,
+                        sellingId : null,
+                        buyerNumber : state.item.buyerNumber, 
+                        sellerNumber : 1, // 로그인 구현 후 수정
+                        price : state.item.buyWishPrice,
                         productSize : state.size	
                     }
                     const res = await axios.post(url, body, {headers});
                     console.log("보냄", res);
-
-                    
+ 
                 } catch(err) {
                     console.error(err);
                 }
                     
                 router.push({
-                    path : '/buying/complete',
+                    path : '/selling/complete',
                     query : {
                         productid: state.productid,
                         type : state.type
@@ -197,13 +226,13 @@ export default {
         }
 
 
-        // 구매입찰
-        const handleBid = async() => {
+        // 판매입찰, 보관판매 - 판매테이블
+        const handleSellLater = async() => {
             // 유효성 검사 통과 > 구매 조건 확인 all check
             // if(state.errorMessage.length === 0) { 
     
                 try {
-                    const url = `/api/post/buy`;
+                    const url = `/api/post/sell?type=${state.type}`;
                     const headers = {"Content-Type":"application/json"};
                     const body = {
                         memberNumber : 1, // 로그인 구현 후 수정
@@ -219,7 +248,7 @@ export default {
                 }
                     
                 router.push({
-                    path : '/buying/complete',
+                    path : '/selling/complete',
                     query : {
                         productid: state.productid,
                         type : state.type
@@ -228,13 +257,14 @@ export default {
             // }
         }
 
-        // 구매 입찰 시 데이터 필요
-        if(state.type === 'bid') {
+
+        // 판매 입찰, 보관 판매 시 데이터 필요
+        if(state.type === 'bid' || state.type === 'keep') {
             const handleData = async() => {
                 try {
                     const res = await axios.get(`/api/get/product/one?productid=${state.productid}`);
                     state.row = res.data;
-                    console.log("구매입찰", state.row)
+                    console.log("판매입찰이나 보관판매", state.row)
                 } catch (err) {
                     console.error(err);
                 }
@@ -250,8 +280,8 @@ export default {
         return {
             state,
             showModal,
-            handleBuy,
-            handleBid,
+            handleSellNow,
+            handleSellLater,
         }
     }
 }

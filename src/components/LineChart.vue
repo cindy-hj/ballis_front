@@ -21,7 +21,7 @@
                     <li class="info_box">거래일</li>
                 </ul>
                 <hr />
-                <ul v-for="(tmp, i) in this.row" :key="i" class="info_body">
+                <ul v-for="(tmp, i) in this.row.slice().reverse()" :key="i" class="info_body">
                     <li class="info_box" v-if="tmp.sellSize">{{ tmp.sellSize }}</li>
                     <li class="info_box" v-else>{{ tmp.buySize }}</li>
                     <li class="info_box">{{ tmp.price }}원</li>

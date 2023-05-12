@@ -2,10 +2,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 import MainView from '../views/MainView.vue'
 import ProductListView from '../views/ProductListView'
 import ProductOneView from '../views/ProductOneView'
+
 import BuyingSizeView from '../views/BuyingSizeView'
 import BuyingMethodView from '../views/BuyingMethodView'
 import BuyingPaymentView from '../views/BuyingPaymentView'
 import BuyingCompleteView from '../views/BuyingCompleteView'
+
+import SellingSizeView from '../views/SellingSizeView'
+import SellingMethodView from '../views/SellingMethodView'
+import SellingPaymentView from '../views/SellingPaymentView'
+import SellingCompleteView from '../views/SellingCompleteView'
 
 import AdminProductListView from '../views/AdminProductListView.vue'
 import AdminMemberListView from '../views/AdminMemberListView.vue'
@@ -49,6 +55,26 @@ const routes = [
     path: '/buying/complete',
     name: 'buyingcomplete',
     component: BuyingCompleteView
+  },
+  {
+    path: '/selling/size',
+    name: 'sellingsizes',
+    component: SellingSizeView
+  },
+  {
+    path: '/selling/method',
+    name: 'sellingmethod',
+    component: SellingMethodView
+  },
+  {
+    path: '/selling/payment',
+    name: 'sellingpayment',
+    component: SellingPaymentView
+  },
+  {
+    path: '/selling/complete',
+    name: 'sellingcomplete',
+    component: SellingCompleteView
   },
   {
     path: '/admin/prdouct/list',

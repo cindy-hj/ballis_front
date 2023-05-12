@@ -18,31 +18,46 @@
                 <p>즉시 판매가</p>
                 <p v-if="state.row[0].buyWishPrice">{{ state.row[0].buyWishPrice }}원</p>
                 <p v-else>- 원</p> 
-                {{  }}
-                <button @click="state.type = 'bid'">구매 입찰</button>
-                <button :disabled="state.onlyBid" @click="state.type = 'normal'">즉시 구매</button>
+                <button @click="state.type = 'keep'">보관 판매</button>
+                <button @click="state.type = 'bid'">판매 입찰</button>
+                <button :disabled="!state.item" @click="state.type = 'normal'">즉시 판매</button>
                 
-                <!-- 즉시 구매 -->
+                <!-- 즉시 판매 -->
                 <div v-show="state.type === 'normal'">
-                    <p>즉시 구매가</p>
-                    <p>{{ state.row[0].sellWishPrice }}원</p>
-                    <p>총 결제금액은 다음 화면에서 계산됩니다.</p> 
+                    <p>즉시 판매가</p>
+                    <p>{{ state.item.buyWishPrice }}원</p>
                     <hr />
-                    <p>총 결제 금액</p>
-                    <p>다음 화면에서 확인</p>
-                    <p><button @click="handleNext('normal')">즉시 구매 계속</button></p>
+
+                    <p>검수비</p>
+                    <p>무료</p>
+                    <p>수수료</p>
+                    <p>{{ -Math.floor(Number(state.item.buyWishPrice)*0.02) }}원</p>
+                    <p>배송비</p>
+                    <p>선불, 판매자 부담</p> 
+                    <hr />
+
+                    <p>정산 금액</p>
+                    <p>{{ Math.floor(Number(state.item.buyWishPrice) - Number(state.item.buyWishPrice)*0.02) }}원</p>
+                    <p><button @click="handleNext('normal')">즉시 판매 계속</button></p>
                 </div>      
 
-                <!-- 구매 입찰 -->
+                <!-- 판매 입찰 -->
                 <div v-show="state.type === 'bid'">
-                    <p>구매 희망가</p>
+                    <p>판매 희망가</p>
                     <div>
                         <input type="text" v-model="state.inputValue" @input="handleInput" />
                         <p v-if="state.errorMessage">{{ state.errorMessage }}</p>
                     </div>
-
-                    <p>총 결제금액은 다음 화면에서 계산됩니다.</p> 
                     <hr />
+
+                    <p>검수비</p>
+                    <p>무료</p>
+                    <p>수수료</p>
+                    <p>{{ -Math.floor(Number(state.inputValue)*0.02) }}원</p>
+                    <p>배송비</p>
+                    <p>선불, 판매자 부담</p> 
+                    <hr />
+
                     <p>입찰 마감기한</p>
                     <p>
                         {{ state.days }}일 ({{ state.formattedDate }}마감)
@@ -53,10 +68,47 @@
                         <button @click="handleDate(60)">60일</button>
                     </p>
                     <hr />
-                    <p>총 결제 금액</p>
-                    <p>다음 화면에서 확인</p>
+
+                    <p>정산 금액</p>
+                    <p>{{ Math.floor(Number(state.inputValue) - Number(state.inputValue)*0.02) }}원</p>
                     <p><button :disabled="!state.inputValue || state.errorMessage.length > 0"
-                        @click="handleNext('bid')">구매 입찰 계속</button></p>
+                        @click="handleNext('bid')">판매 입찰 계속</button></p>
+                </div>
+
+                <!-- 보관 판매 -->
+                <div v-show="state.type === 'keep'">
+                    <p>판매 희망가</p>
+                    <div>
+                        <input type="text" v-model="state.inputValue" @input="handleInput" />
+                        <p v-if="state.errorMessage">{{ state.errorMessage }}</p>
+                    </div>
+                    <hr />
+
+                    <p>정산 금액</p>
+                    <p>{{ Math.floor(Number(state.inputValue) - Number(state.inputValue)*0.02) }}원</p>
+                    <hr />                                
+
+                    <p>검수비</p>
+                    <p>무료</p>
+                    <p>수수료</p>
+                    <p>{{ -Math.floor(Number(state.inputValue)*0.02) }}원</p>
+                    <p>배송비</p>
+                    <p>선불, 판매자 부담</p> 
+                    <hr />
+
+                    <p>결제 금액</p>
+                    <p>3000원</p>
+                    <hr />
+
+                    <p>창고 이용료</p>
+                    <p>3000원</p>
+                    <p>보관 기한</p>
+                    <p>기본 {{ state.days }}일 ({{ state.formattedDate }}까지)</p>
+                    <p>이후 월 3000원/건 자동 결제</p>
+                    <hr />
+                    
+                    <p><button :disabled="!state.inputValue || state.errorMessage.length > 0"
+                        @click="handleNext('keep')">보관 판매 계속</button></p>
                 </div>
             </div>
         </div>
@@ -65,7 +117,7 @@
 
 <script>
 import axios from 'axios';
-import { onMounted, reactive } from 'vue';
+import { onMounted, reactive, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 
@@ -80,7 +132,8 @@ export default {
             size : Number(route.query.size),
             type : route.query.type,
             row : [],
-            onlyBid : false,
+            item : '',
+            // onlyBid : false,
 
             inputValue : '',
             errorMessage : '',
@@ -89,12 +142,16 @@ export default {
             date : null,
             formattedDate : null,
 
-            // item : ''
         })
 
-        // watchEffect(() => {
-        //     state.item = store.getters.getSelectedItem;
-        // })
+        watchEffect(() => {
+            state.item = store.getters.getSelectedItem;
+            if(state.type === "normal") {
+                state.inputValue = '';
+                state.errorMessage = '';
+            }
+        });
+
         
         const handleDate = (days) => {
             state.days = days;
@@ -118,7 +175,7 @@ export default {
                 if (state.inputValue< 30000) {
                     state.errorMessage = '3만원 이상 입력 가능합니다.';
                 } else if (state.inputValue % 1000 !== 0) {
-                    state.errorMessage = '1000 단위로 입력 가능합니다.';
+                    state.errorMessage = '1000원 단위로 입력 가능합니다.';
                 } else {
                     state.errorMessage = '';
                 }
@@ -134,37 +191,32 @@ export default {
         const handleNext = (type) => {
             // 유효성 검사 통과
             if(state.errorMessage.length === 0) {
-                // store에 구매입찰 가격, 마감기한 보관
+                // store에 판입찰 가격, 마감기한 보관
                 store.commit('setSelectedPrice', state.inputValue)
                 store.commit('setSelectedDate', state.date)
                 store.commit('setSelectedFormattedDate', state.formattedDate)
                 store.commit('setSelectedDays', state.days)
                 
                 router.push({
-                    path : '/buying/payment',
+                    path : '/selling/payment',
                     query : {
                         productid: state.productid,
                         size : state.size,
                         type : type
                     }
                 })
+            } else {
+                console.log("에러메시지 존재")
             }
         }
 
         const handleData = async() => {
             try {
                 const res = await axios.get(`/api/get/product/method?productid=${state.productid}&size=${state.size}`);
-                const filteredData = res.data.filter(item => item.sellProductSize === state.size);
+                state.row = res.data;
+                console.log("즉시판매나 판매입찰이나 위에 띄우는 데이터는 동일", state.row)
+                // state.onlyBid = true;
                 
-                if(filteredData.length > 0) { // query와 일치하는 사이즈 데이터 존재 -> 즉시 구매
-                    state.row = filteredData;
-                    console.log("즉시구매", state.row)
-                } else { // else -> 구매입찰
-                    state.row = res.data;
-                    state.onlyBid = true;
-                    console.log("구매입찰", state.row)
-                }
-            
             } catch (err) {
                 console.error(err);
             }
