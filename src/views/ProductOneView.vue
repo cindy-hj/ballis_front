@@ -147,7 +147,7 @@ export default {
 
         
         const handleDataReview = () => {
-            const url = `/api/get/review/all`;
+            const url = `/api/get/review/product?productid=${state.productid}`;
             const headers = { "Content-Type" : "application/json" };
             axios.get(url, { headers })
                 .then(res => {

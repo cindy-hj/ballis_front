@@ -46,10 +46,17 @@
                         <img :src="tmp.imagePath" class="new_item_img">
                         <p style="font-weight: bold;">{{ tmp.brandName }}</p>
                         <p>{{ tmp.productEngName }}</p>
-                        <p class="fast_small" v-if="tmp.inventoryDiv === 1">빠른배송</p>
+                        <div v-for="(fast, j) in state.newFast" :key="j">
+                            <p class="fast_small" v-if="fast.id === tmp.id && fast.hasStorage">빠른배송</p>
+                        </div>
                         <p>&nbsp;</p>
-                        <p style="font-weight: bold; font-size: large;">{{ tmp.wishPrice }}원</p>
-                        <p v-if="tmp.wishPrice" style="color: #aeaeae;">즉시 구매가</p>       
+                        <div v-if="tmp.wishPrice">
+                            <p style="font-weight: bold; font-size: large;">{{ tmp.wishPrice }}원</p>
+                            <p style="color: #aeaeae;">즉시 구매가</p>
+                        </div>
+                        <div v-else>
+                            <p style="font-weight: bold; font-size: large;">-</p>
+                        </div> 
                     </div>
                 </div>
                 <div class="button">
@@ -69,10 +76,17 @@
                         <img :src="tmp.imagePath" class="pop_item_img">
                         <p style="font-weight: bold;">{{ tmp.brandName }}</p>
                         <p>{{ tmp.productEngName }}</p>
-                        <p class="fast_small" v-if="tmp.inventoryDiv === 1">빠른배송</p>
+                        <div v-for="(fast, j) in state.popFast" :key="j">
+                            <p class="fast_small" v-if="fast.id === tmp.id && fast.hasStorage">빠른배송</p>
+                        </div>
                         <p>&nbsp;</p>
-                        <p style="font-weight: bold; font-size: large;">{{ tmp.wishPrice }}원</p>
-                        <p v-if="tmp.wishPrice" style="color: #aeaeae;">즉시 구매가</p>       
+                        <div v-if="tmp.wishPrice">
+                            <p style="font-weight: bold; font-size: large;">{{ tmp.wishPrice }}원</p>
+                            <p style="color: #aeaeae;">즉시 구매가</p>
+                        </div>
+                        <div v-else>
+                            <p style="font-weight: bold; font-size: large;">-</p>
+                        </div>      
                     </div>
                 </div>
                 <div class="button">
@@ -126,10 +140,12 @@ export default {
 
         const state = reactive({
             newRows: [],
+            newFast: [],
             displayedNewItems: [],
             visibleNewCount: 4,
 
             popRows: [],
+            popFast: [],
             displayedPopItems: [],
             visiblePopCount: 4,
 
@@ -163,8 +179,11 @@ export default {
             const headers = { "Content-Type" : "application/json" };
             axios.get(url, { headers })
                 .then(res => {
-                    console.log('신상품', res.data);
-                    state.newRows = res.data;
+                    // console.log('신상품', res.data);
+                    state.newRows = res.data.lists;
+                    // 빠른배송 여부
+                    state.newFast = res.data.storage;
+                    // console.log("빠른배송", res.data.storage)
                     // 4개씩 출력
                     state.displayedNewItems = state.newRows.slice(0, state.visibleNewCount);
                 })
@@ -178,8 +197,10 @@ export default {
             const headers = { "Content-Type" : "application/json" };
             axios.get(url, { headers })
                 .then(res => {
-                    console.log('인기상품', res.data);
-                    state.popRows = res.data;
+                    // console.log('인기상품', res.data);
+                    state.popRows = res.data.lists;
+                    // 빠른배송 여부
+                    state.popFast = res.data.storage;
                     // 4개씩 출력
                     state.displayedPopItems = state.popRows.slice(0, state.visiblePopCount);
                 })
