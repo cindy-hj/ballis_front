@@ -1,6 +1,7 @@
 <template>
     <!-- 모달영역 -->
     <delivery-modal v-if="showModal" @close="showModal = false"/>
+    <address-list-modal v-if="showAddressList" :addressList="state.addressList" @close="showAddressList = false" @select="selectAdd"/>
     <div class="common_mt160">
         <!-- 빠른배송, 즉시구매 -->
         <div class="container" id="wrap" v-if="state.type === 'fast' || state.type === 'normal'">
@@ -17,6 +18,15 @@
 
             <h4>배송 주소</h4>
             <p><button @click="showModal = true">주소 추가</button></p>
+            <p><button @click="showAddressList = true">+</button></p>
+            <div v-if="!state.addressList">
+                <p>주소를 추가하세요</p>
+            </div>
+            <div v-if="state.selectedAddress">
+                <p>{{ state.selectedAddress.name }}</p>
+                <p>{{ state.selectedAddress.phoneNumber }}</p>
+                <p>{{ state.selectedAddress.address }} {{ state.selectedAddress.subAddress }}</p>
+            </div>
             <hr />
 
             <h4>배송 방법</h4>
@@ -111,15 +121,15 @@
             <h4>구매 조건 확인</h4>
             <button @click="handleBid">구매 입찰하기</button>
         </div>
-
+        <!-- 결제 컴포넌트 -->
+        <payment-component :address="state.selectedAddress" :type="state.type" :contractDto="contractDto"/>
     </div>
-    
-    
-
 </template>
 
 <script>
-import DeliveryModal from '@/components/DeliveryModal.vue';
+import DeliveryModal from '@/components/DeliveryModal';
+import PaymentComponent from '@/components/PaymentComponent';
+import AddressListModal from '@/components/AddressListModal';
 import axios from 'axios';
 import { onMounted, reactive, ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -127,7 +137,9 @@ import { useStore } from 'vuex';
 
 export default {
     components: {
-        DeliveryModal
+        DeliveryModal,
+        PaymentComponent,
+        AddressListModal
     },
     setup () {
         const route = useRoute();
@@ -135,12 +147,16 @@ export default {
         const store = useStore();
 
         const showModal = ref(false);
+        const showAddressList = ref(false);
 
         const state = reactive({
             productid: Number(route.query.productid),
             size : Number(route.query.size),
             type : route.query.type,
             item : '',
+            addressList : [],
+            selectedAddress : {},
+            memberNumber : 1, // 로그인 구현 후 수정
             
             row : [],
             sellingStatus : null,
@@ -162,7 +178,45 @@ export default {
             state.bidDays = store.getters.getSelectedDays;
         });
 
-        // 결제
+
+        // 주소 리스트
+        const handleAddressList = async() => {
+            try {
+                const res = await axios.get(`/api/get/address?member=${state.memberNumber}`)
+                console.log("주소목록", res.data)
+                state.addressList = res.data
+                const defaultAddress = state.addressList.find(address => address.defaultAddress === 1)
+                if(defaultAddress) {
+                    state.selectedAddress = defaultAddress
+                }
+            } catch(err) {
+                console.error(err);
+            }
+        }
+
+        const selectAdd = (selectedAddress) => {
+            state.selectedAddress = selectedAddress;
+            console.log("선택주소",selectedAddress)
+        }
+
+
+
+        const contractDto = {
+
+            productId : state.productid,
+            buyingId : null,
+            sellingId : state.item.sellingId,
+            buyerNumber : 1, // 로그인 구현 후 수정
+            sellerNumber : state.item.sellerNumber,
+            price : state.item.sellWishPrice,
+            productSize : state.size	
+        
+        }
+
+
+
+
+
         const handleBuy = async() => {
             // 유효성 검사 통과 > 구매 조건 확인 all check
             // if(state.errorMessage.length === 0) { 
@@ -245,13 +299,18 @@ export default {
             })
         }
 
-
+        onMounted(()=>{
+            handleAddressList();
+        })
 
         return {
             state,
             showModal,
+            showAddressList,
+            selectAdd,
             handleBuy,
             handleBid,
+            contractDto
         }
     }
 }

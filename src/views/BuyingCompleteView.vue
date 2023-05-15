@@ -132,8 +132,6 @@ export default {
             bidPrice : 0,
             bidFormattedDate : '',
             bidDays : ''
-
-
         })
 
         watchEffect(() => {

@@ -1,6 +1,7 @@
 <template>
-    <!-- 모달영역 -->
+    <!-- 주소 추가 모달 -->
     <delivery-modal v-if="showModal" @close="showModal = false"/>
+    <address-list-modal v-if="showAddressList" :addressList="state.addressList" @close="showAddressList = false" @select="selectAdd"/>
     <div class="common_mt160">
         <!-- 즉시판매 -->
         <div class="container" id="wrap" v-if="state.type === 'normal'">
@@ -18,6 +19,15 @@
             <hr />
             <h4>반송 주소</h4>
             <p><button @click="showModal = true">주소 추가</button></p>
+            <p><button @click="showAddressList = true">+</button></p>
+            <div v-if="!state.addressList">
+                <p>주소를 추가하세요</p>
+            </div>
+            <div v-if="state.selectedAddress">
+                <p>{{ state.selectedAddress.name }}</p>
+                <p>{{ state.selectedAddress.phoneNumber }}</p>
+                <p>{{ state.selectedAddress.address }} {{ state.selectedAddress.subAddress }}</p>
+            </div>
             <hr />
             <h4>발송 방법</h4>
             <div>
@@ -144,12 +154,16 @@
                 <h4>보관판매 조건 확인</h4>
                 <button @click="handleSellLater">결제하기</button>
             </div>
+            <!-- 결제 컴포넌트-->
+            <payment-component :address="state.selectedAddress" :type="state.type"/>
         </div>
     </div>
 </template>
 
 <script>
 import DeliveryModal from '@/components/DeliveryModal.vue';
+import PaymentComponent from '@/components/PaymentComponent';
+import AddressListModal from '@/components/AddressListModal';
 import axios from 'axios';
 import { onMounted, reactive, ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -157,7 +171,9 @@ import { useStore } from 'vuex';
 
 export default {
     components: {
-        DeliveryModal
+        DeliveryModal,
+        PaymentComponent,
+        AddressListModal
     },
     setup () {
         const route = useRoute();
@@ -165,12 +181,16 @@ export default {
         const store = useStore();
 
         const showModal = ref(false);
+        const showAddressList = ref(false);
 
         const state = reactive({
             productid: Number(route.query.productid),
             size : Number(route.query.size),
             type : route.query.type,
             item : '',
+            addressList : [],
+            selectedAddress : {},
+            memberNumber : 1, // 로그인 구현 후 수정
             
             row : [],
             sellingStatus : null,
@@ -191,6 +211,32 @@ export default {
             state.bidFormattedDate = store.getters.getSelectedFormattedDate;
             state.bidDays = store.getters.getSelectedDays;
         });
+
+
+
+
+        // 주소 리스트
+        const handleAddressList = async() => {
+            try {
+                const res = await axios.get(`/api/get/address?member=${state.memberNumber}`)
+                console.log("주소목록", res.data)
+                state.addressList = res.data
+                const defaultAddress = state.addressList.find(address => address.defaultAddress === 1)
+                if(defaultAddress) {
+                    state.selectedAddress = defaultAddress
+                }
+            } catch(err) {
+                console.error(err);
+            }
+        }
+
+        const selectAdd = (selectedAddress) => {
+            state.selectedAddress = selectedAddress;
+            console.log("선택주소",selectedAddress)
+        }
+
+
+
 
         // 즉시판매 - 결제테이블
         const handleSellNow = async() => {
@@ -275,11 +321,17 @@ export default {
             })
         }
 
+        onMounted(()=>{
+            handleAddressList();
+        })
+
 
 
         return {
             state,
             showModal,
+            showAddressList,
+            selectAdd,
             handleSellNow,
             handleSellLater,
         }
