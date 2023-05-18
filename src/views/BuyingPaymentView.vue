@@ -41,26 +41,26 @@
             <h4>최종 주문 정보</h4>
             <h5>총 결제 금액</h5>
             <div v-if="state.type === 'fast'">
-                <h5>{{ state.item.sellWishPrice + state.item.sellWishPrice*0.015 + 5000 }}원</h5>
+                <h5>{{ Math.floor(state.item.sellWishPrice + state.item.sellWishPrice*0.015 + 5000) }}원</h5>
                 <hr />
                 <p>구매가</p>
                 <p>{{ state.item.sellWishPrice }}</p>
                 <p>검수비</p>
                 <p>무료</p>
                 <p>수수료</p>
-                <p>{{ state.item.sellWishPrice*0.015 }}</p>
+                <p>{{ Math.floor(state.item.sellWishPrice*0.015) }}</p>
                 <p>배송비</p>
                 <p>5,000원</p>
             </div>
             <div v-if="state.type === 'normal'">
-                <h5>{{ state.item.sellWishPrice + state.item.sellWishPrice*0.015 + 3000 }}원</h5>
+                <h5>{{ Math.floor(state.item.sellWishPrice + state.item.sellWishPrice*0.015 + 3000) }}원</h5>
                 <hr />
                 <p>즉시 구매가</p>
                 <p>{{ state.item.sellWishPrice }}</p>
                 <p>검수비</p>
                 <p>무료</p>
                 <p>수수료</p>
-                <p>{{ state.item.sellWishPrice*0.015 }}</p>
+                <p>{{ Math.floor(state.item.sellWishPrice*0.015) }}</p>
                 <p>배송비</p>
                 <p>3,000원</p>
             </div>
@@ -70,7 +70,8 @@
             <hr />
             
             <h4>구매 조건 확인</h4>
-            <button @click="handleBuy">결제하기</button>
+            <!-- 결제 컴포넌트 -->
+            <payment-component :address="state.selectedAddress" :type="state.type" :contractDto="state.contractDto"/>
         </div>
 
         <!-- 구매입찰 -->
@@ -99,14 +100,14 @@
             <h4>최종 주문 정보</h4>
             <h5>총 결제 금액</h5>
             <div>
-                <h5 >{{ state.bidPrice + state.bidPrice*0.03 + 3000 }}원</h5>
+                <h5 >{{ Math.floor(state.bidPrice + state.bidPrice*0.03 + 3000) }}원</h5>
                 <hr />
                 <p>구매 희망가</p>
                 <p>{{ state.bidPrice }}</p>
                 <p>검수비</p>
                 <p>무료</p>
                 <p>수수료</p>
-                <p>{{ state.bidPrice*0.03 }}</p>
+                <p>{{ Math.floor(state.bidPrice*0.03) }}</p>
                 <p>배송비</p>
                 <p>3,000원</p>
                 <hr />
@@ -121,8 +122,6 @@
             <h4>구매 조건 확인</h4>
             <button @click="handleBid">구매 입찰하기</button>
         </div>
-        <!-- 결제 컴포넌트 -->
-        <payment-component :address="state.selectedAddress" :type="state.type" :contractDto="contractDto"/>
     </div>
 </template>
 
@@ -167,6 +166,7 @@ export default {
             bidFormattedDate : '',
             bidDays : '',
 
+            contractDto : {}
         })
         
 
@@ -199,57 +199,20 @@ export default {
             console.log("선택주소",selectedAddress)
         }
 
-
-
-        const contractDto = {
-
-            productId : state.productid,
-            buyingId : null,
-            sellingId : state.item.sellingId,
-            buyerNumber : 1, // 로그인 구현 후 수정
-            sellerNumber : state.item.sellerNumber,
-            price : state.item.sellWishPrice,
-            productSize : state.size	
-        
+        // 빠른배송, 즉시구매 시 결제창에 데이터 전달
+        if(state.type === 'fast' || state.type === 'normal') {
+            state.contractDto = {
+                productId : state.productid,
+                buyingId : null,
+                sellingId : state.item.sellingId,
+                buyerNumber : state.memberNumber,
+                sellerNumber : state.item.sellerNumber,
+                price : state.item.sellWishPrice,
+                productSize : state.size
+            }
+            console.log("전달되니컨트랙트", state.contractDto)
         }
-
-
-
-
-
-        const handleBuy = async() => {
-            // 유효성 검사 통과 > 구매 조건 확인 all check
-            // if(state.errorMessage.length === 0) { 
-                try {
-                    const url = `/api/post/contract/sell?type=${state.type}`;
-                    const headers = {"Content-Type":"application/json"};
-                    const body = {
-                        productId : state.productid,
-                        buyingId : null,
-                        sellingId : state.item.sellingId,
-                        buyerNumber : 1, // 로그인 구현 후 수정
-                        sellerNumber : state.item.sellerNumber,
-                        price : state.item.sellWishPrice,
-                        productSize : state.size	
-                    }
-                    const res = await axios.post(url, body, {headers});
-                    console.log("보냄", res);
-
-                    
-                } catch(err) {
-                    console.error(err);
-                }
-                    
-                router.push({
-                    path : '/buying/complete',
-                    query : {
-                        productid: state.productid,
-                        type : state.type
-                    }
-                })
-            // }
-        }
-
+            
 
         // 구매입찰
         const handleBid = async() => {
@@ -260,7 +223,7 @@ export default {
                     const url = `/api/post/buy`;
                     const headers = {"Content-Type":"application/json"};
                     const body = {
-                        memberNumber : 1, // 로그인 구현 후 수정
+                        memberNumber : state.memberNumber,
                         productId : state.productid,
                         productSize : state.size,
                         wishPrice : state.bidPrice,
@@ -308,9 +271,7 @@ export default {
             showModal,
             showAddressList,
             selectAdd,
-            handleBuy,
             handleBid,
-            contractDto
         }
     }
 }

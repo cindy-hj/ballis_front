@@ -25,14 +25,14 @@
                         <button class="btn btn-primary btn-lg " type="button" id="wish_price_button" @click="handleBuying(state.productid)">
                             <span>구매</span>
                             <span v-if="tmp.sellWishPrice">
-                                {{ tmp.sellWishPrice }}원
+                                <p>{{ tmp.sellWishPrice }}원</p>
                                 <p style="font-size: 15px;">즉시 구매가</p>
                             </span>
                         </button>
                         <button class="btn btn-secondary btn-lg" type="button" id="wish_price_button" @click="handleSelling(state.productid)">
                             <span>판매</span>
                             <span v-if="tmp.buyWishPrice">
-                                {{ tmp.buyWishPrice }}원
+                                <p>{{ tmp.buyWishPrice }}원</p>
                                 <p style="font-size: 15px;">즉시 판매가</p>
                             </span>
                         </button>
@@ -202,7 +202,11 @@ export default {
 } */
 
 #wish_price_button{
-    height: 70px;
+    height: 100px;
+    width: 300px;
+}
+#wish_price_button p {
+    margin: 0;
 }
 .product_info_body{
     display: flex;

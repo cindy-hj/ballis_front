@@ -74,6 +74,15 @@
                 <hr />
                 <h4>반송 주소</h4>
                 <p><button @click="showModal = true">주소 추가</button></p>
+                <p><button @click="showAddressList = true">+</button></p>
+                <div v-if="!state.addressList">
+                    <p>주소를 추가하세요</p>
+                </div>
+                <div v-if="state.selectedAddress">
+                    <p>{{ state.selectedAddress.name }}</p>
+                    <p>{{ state.selectedAddress.phoneNumber }}</p>
+                    <p>{{ state.selectedAddress.address }} {{ state.selectedAddress.subAddress }}</p>
+                </div>
                 <hr />
                 <h4>발송 방법</h4>
                 <div>
@@ -90,7 +99,7 @@
                     <p>검수비</p>
                     <p>무료</p>
                     <p>수수료</p>
-                    <p>{{ -Math.floor(state.bidPrice*0.02) }}원인데 최대 30만원이로구만...</p>
+                    <p>{{ -Math.floor(state.bidPrice*0.02) }}원</p>
                     <p>배송비</p>
                     <p>선불, 판매자 부담</p>
                     <hr />
@@ -111,6 +120,15 @@
                 <hr />
                 <h4>반송/회수 주소</h4>
                 <p><button @click="showModal = true">주소 추가</button></p>
+                <p><button @click="showAddressList = true">+</button></p>
+                <div v-if="!state.addressList">
+                    <p>주소를 추가하세요</p>
+                </div>
+                <div v-if="state.selectedAddress">
+                    <p>{{ state.selectedAddress.name }}</p>
+                    <p>{{ state.selectedAddress.phoneNumber }}</p>
+                    <p>{{ state.selectedAddress.address }} {{ state.selectedAddress.subAddress }}</p>
+                </div>
                 <hr />
                 <h4>발송 방법</h4>
                 <div>
@@ -133,7 +151,7 @@
                     <p>검수비</p>
                     <p>무료</p>
                     <p>수수료</p>
-                    <p>{{ -Math.floor(state.bidPrice*0.02) }}원인데 최대 30만원이로구만...</p>
+                    <p>{{ -Math.floor(state.bidPrice*0.02) }}원</p>
                     <p>배송비</p>
                     <p>선불, 판매자 부담</p>
                     <hr />
@@ -152,10 +170,10 @@
                 <h4>결제 방법</h4>
                 <hr />
                 <h4>보관판매 조건 확인</h4>
-                <button @click="handleSellLater">결제하기</button>
+                <!-- 결제 컴포넌트-->
+                <payment-component :address="state.selectedAddress" :type="state.type" :sellingDto="state.sellingDto"/>
             </div>
-            <!-- 결제 컴포넌트-->
-            <payment-component :address="state.selectedAddress" :type="state.type"/>
+           
         </div>
     </div>
 </template>
@@ -201,6 +219,8 @@ export default {
             bidFormattedDate : '',
             bidDays : '',
 
+            sellingDto : {}
+
         })
         
 
@@ -211,9 +231,6 @@ export default {
             state.bidFormattedDate = store.getters.getSelectedFormattedDate;
             state.bidDays = store.getters.getSelectedDays;
         });
-
-
-
 
         // 주소 리스트
         const handleAddressList = async() => {
@@ -236,7 +253,17 @@ export default {
         }
 
 
-
+        // 보관판매시 결제 컴포넌트에 데이터 전달
+        if(state.type ==='keep') {
+            state.sellingDto = {                
+                memberNumber : state.memberNumber,
+                productId : state.productid,
+                productSize : state.size,
+                wishPrice : state.bidPrice,
+                expiryDate : state.bidDate,
+            }
+        }
+        
 
         // 즉시판매 - 결제테이블
         const handleSellNow = async() => {
@@ -250,7 +277,7 @@ export default {
                         buyingId : state.item.buyingId,
                         sellingId : null,
                         buyerNumber : state.item.buyerNumber, 
-                        sellerNumber : 1, // 로그인 구현 후 수정
+                        sellerNumber : state.memberNumber,
                         price : state.item.buyWishPrice,
                         productSize : state.size	
                     }
@@ -272,7 +299,7 @@ export default {
         }
 
 
-        // 판매입찰, 보관판매 - 판매테이블
+        // 판매입찰 - 판매테이블
         const handleSellLater = async() => {
             // 유효성 검사 통과 > 구매 조건 확인 all check
             // if(state.errorMessage.length === 0) { 
@@ -281,7 +308,7 @@ export default {
                     const url = `/api/post/sell?type=${state.type}`;
                     const headers = {"Content-Type":"application/json"};
                     const body = {
-                        memberNumber : 1, // 로그인 구현 후 수정
+                        memberNumber : state.memberNumber,
                         productId : state.productid,
                         productSize : state.size,
                         wishPrice : state.bidPrice,

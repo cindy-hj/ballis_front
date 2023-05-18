@@ -64,7 +64,7 @@
 
 <script>
 import axios from 'axios';
-import { onMounted, reactive } from 'vue';
+import { onMounted, reactive, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 
@@ -91,9 +91,13 @@ export default {
             // item : ''
         })
 
-        // watchEffect(() => {
-        //     state.item = store.getters.getSelectedItem;
-        // })
+        watchEffect(() => {
+            // state.item = store.getters.getSelectedItem;
+            if(state.type === "normal") {
+                state.inputValue = '';
+                state.errorMessage = '';
+            }
+        });
         
         const handleDate = (days) => {
             state.days = days;

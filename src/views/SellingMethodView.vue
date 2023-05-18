@@ -20,24 +20,24 @@
                 <p v-else>- 원</p> 
                 <button @click="state.type = 'keep'">보관 판매</button>
                 <button @click="state.type = 'bid'">판매 입찰</button>
-                <button :disabled="!state.item" @click="state.type = 'normal'">즉시 판매</button>
+                <button :disabled="!state.sellNow" @click="state.type = 'normal'">즉시 판매</button>
                 
                 <!-- 즉시 판매 -->
                 <div v-show="state.type === 'normal'">
                     <p>즉시 판매가</p>
-                    <p>{{ state.item.buyWishPrice }}원</p>
+                    <p>{{ state.row[0].buyWishPrice }}원</p>
                     <hr />
 
                     <p>검수비</p>
                     <p>무료</p>
                     <p>수수료</p>
-                    <p>{{ -Math.floor(Number(state.item.buyWishPrice)*0.02) }}원</p>
+                    <p>{{ -Math.floor(Number(state.row[0].buyWishPrice)*0.02) }}원</p>
                     <p>배송비</p>
                     <p>선불, 판매자 부담</p> 
                     <hr />
 
                     <p>정산 금액</p>
-                    <p>{{ Math.floor(Number(state.item.buyWishPrice) - Number(state.item.buyWishPrice)*0.02) }}원</p>
+                    <p>{{ Math.floor(Number(state.row[0].buyWishPrice) - Number(state.row[0].buyWishPrice)*0.02) }}원</p>
                     <p><button @click="handleNext('normal')">즉시 판매 계속</button></p>
                 </div>      
 
@@ -132,8 +132,8 @@ export default {
             size : Number(route.query.size),
             type : route.query.type,
             row : [],
-            item : '',
-            // onlyBid : false,
+            // item : '',
+            sellNow : false,
 
             inputValue : '',
             errorMessage : '',
@@ -145,7 +145,7 @@ export default {
         })
 
         watchEffect(() => {
-            state.item = store.getters.getSelectedItem;
+            // state.item = store.getters.getSelectedItem;
             if(state.type === "normal") {
                 state.inputValue = '';
                 state.errorMessage = '';
@@ -213,10 +213,17 @@ export default {
         const handleData = async() => {
             try {
                 const res = await axios.get(`/api/get/product/method?productid=${state.productid}&size=${state.size}`);
-                state.row = res.data;
-                console.log("즉시판매나 판매입찰이나 위에 띄우는 데이터는 동일", state.row)
-                // state.onlyBid = true;
+                const filteredData = res.data.filter(item => item.buyProductSize === state.size);
                 
+                if(filteredData.length > 0) { // query와 일치하는 사이즈 데이터 존재 -> 즉시 구매
+                    state.row = filteredData;
+                    state.sellNow = true;
+                    console.log("즉시판매", state.row)
+                } else { // else -> 구매입찰
+                    state.row = res.data;
+                    console.log("구매입찰, 보관판매", state.row)
+                }
+            
             } catch (err) {
                 console.error(err);
             }

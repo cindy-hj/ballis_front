@@ -107,7 +107,7 @@
                     <p>검수비</p>
                     <p>무료</p>
                     <p>수수료</p>
-                    <p>{{ -Math.floor(state.bidPrice*0.02) }}원인데 최대 30만원이로구만...</p>
+                    <p>{{ -Math.floor(state.bidPrice*0.02) }}원</p>
                     <p>배송비</p>
                     <p>선불, 판매자 부담</p>
                     <hr />
@@ -120,7 +120,7 @@
                     <p>3000원</p>
                     <p>30일마다 3000원/건 자동 결제</p>
                     <p>검수비</p>
-                    <p>무료</p>>
+                    <p>무료</p>
                     <p>배송비</p>
                     <p>선불, 판매자 부담</p>
                     <p>보관 기한</p>
@@ -173,7 +173,7 @@ export default {
                 try {
                     const res = await axios.get(`/api/get/product/one?productid=${state.productid}`);
                     state.row = res.data;
-                    console.log("구매입찰 또는 보관판매", state.row)
+                    console.log("판매입찰 또는 보관판매", state.row)
                 } catch (err) {
                     console.error(err);
                 }
